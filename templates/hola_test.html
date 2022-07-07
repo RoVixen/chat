@@ -29,8 +29,6 @@
 
             let socket = new WebSocket("ws://127.0.0.1:8080/API/ws");
 
-             
-
             socket.onopen = function(e) {
                 socket.send(JSON.stringify({
                     publicKey: publicKeyClient
@@ -40,8 +38,6 @@
             socket.onmessage = function(event) {
 
                 var reader = new FileReader();
-
-
 
                 reader.addEventListener('loadend', (e) => {
 
@@ -68,10 +64,11 @@
                     }
 
                     if (text["msg"] != null){
-                        var decrypt = new JSEncrypt();
-                        decrypt.setPrivateKey(privateKeyClient);
-                        var uncryptedd = decrypt.decrypt(text["msg"]);
-                        console.log(text["userSender"] +": "+uncryptedd)
+                        var txt = text["msg"].split(",");
+
+                        var txtfinal = decryptFunction(txt)
+
+                        console.log(text["userSender"] +": "+txtfinal)
                     }
 
                     console.log(map)
@@ -105,9 +102,60 @@
 
         }
 
-        function SendMessage(){
+        function decryptFunction(msg) {
 
-            
+			var msgLength = msg.length;
+
+			var step = 512;
+
+			var finish = 0;
+
+			var result = "";
+
+			var decryptobj = new JSEncrypt();
+			decryptobj.setPrivateKey(privateKeyClient);
+
+			for (i = 0; i < msg.length; i++) {
+
+				var decrypter = decryptobj.decrypt(msg[i]);
+
+				result += decrypter;
+			}
+
+			return result;
+		}
+
+        function encryptFunction(publickey, msg) {
+
+			var msgLength = msg.length;
+
+			var step = 126;
+
+			var finish = 0;
+
+			var result = [];
+
+			var encrypter = new JSEncrypt();
+			encrypter.setPublicKey(publickey);
+
+			for (let start = 0; start < msgLength; start+=step) {
+
+				finish = start + step;
+
+				if (finish > msgLength) {
+					finish = msgLength;
+				}
+
+				var encrypted = encrypter.encrypt(msg.slice(start,finish));
+		
+				result.push(encrypted);
+			}
+
+			return result;
+		}
+
+        function SendMessage(){
+ 
 		    var encrypter = new JSEncrypt();
 
             var text = document.getElementById("id_placeholder").value;
@@ -117,11 +165,15 @@
 
             encrypter.setPublicKey(map.get(placeholderName));
 
-            var encrypted = encrypter.encrypt(text);
+            //var encrypted = encrypter.encrypt(text);
+
+            let encrypted = encryptFunction(map.get(placeholderName), text);
+
+            var myJson = JSON.stringify(encrypted);
 
             socket.send(JSON.stringify({
                 userSender: "{{username}}",
-                msg: encrypted,
+                msg: myJson,
                 userDestination: placeholderName
             }));
         }
@@ -192,6 +244,9 @@
                         <input id="id_placeholder" type="text" class="form-control" placeholder="Enter text here...">
                     </div>
                 </div>
+
+                    <input type='file' name='userFile'><br> 
+
             </div>
         </div>
     </div>
