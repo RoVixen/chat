@@ -122,68 +122,9 @@
 
 		var PublicKey = await contentKey.json();
 
-
-
 		var encrypter = new JSEncrypt();
 
 		encrypter.setPublicKey(PublicKey);
-
-
-
-
-		var private = `-----BEGIN RSA PRIVATE KEY-----
-		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
-		G5bk8MjZjQO9VoOsxtegmIWTgB/QKSY=
-		-----END RSA PRIVATE KEY-----`
-
 
 
 		//create func with parameters
@@ -200,9 +141,6 @@
 			var encrypter = new JSEncrypt();
 			encrypter.setPublicKey(publickey);
 
-			var decryptobj = new JSEncrypt();
-			decryptobj.setPrivateKey(private);
-
 			for (let start = 0; start < msgLength; start+=step) {
 
 				finish = start + step;
@@ -212,12 +150,6 @@
 				}
 
 				var encrypted = encrypter.encrypt(msg.slice(start,finish));
-
-				var decrypter = decryptobj.decrypt(encrypted);
-
-				console.log(encrypted);
-				console.log(decrypter);
-				console.log(" ");
 
 				result.push(encrypted);
 
@@ -258,19 +190,6 @@
 		}
 
 
-
-
-
-
-
-
-
-
-
-
-		
-
-
 		let result = encryptFunction(PublicKey, document.getElementById("passl123").value);
 
 		console.log(result)
@@ -283,19 +202,7 @@
 
 		var decrypter = decrypt.encrypt(document.getElementById("passl123").value);
 
-		/*console.log(decrypter)
 
-
-
-
-
-		let result2 = decryptFunction(private, result);
-
-		console.log(result2)*/
-
-
-
-		
 
 
 
@@ -312,7 +219,7 @@
 	  	document.cookie = "token=" + data["token"] + ";path=/";
 
 		if (content.status >= 200 && content.status < 300) {
-			window.location.href = '/';
+			//window.location.href = '/';
 		} else {
 			alert("error")
 		}

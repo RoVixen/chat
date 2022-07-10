@@ -25,6 +25,60 @@
 
         publicKeyClient = crypt.getPublicKey()
 
+
+        //function that get image from getElementById and convert it to base64
+        function getBase64Image(img) {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            var ctx = canvas.getContext("2d");
+
+            var dataURL = canvas.toDataURL("image/png");
+
+            return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+        }
+
+        //function that convert getElementById to Image object
+        function getImage(id) {
+            var img = document.getElementById(id);
+            return img;
+        }
+
+        //function that convertbase64Image to image
+        function base64ToImage(base64) {
+            var img = new Image();
+            img.src = base64;
+            return img;
+        }
+
+        //function that convert base64 to image and draw into html
+
+        function drawImage(base64, id) {
+            var img = base64ToImage(base64);
+            var canvas = document.getElementById(id);
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+        }
+
+
+
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+              var reader = new FileReader();
+              reader.onload = function (e) {
+                $('#blah')
+                  .attr('src', e.target.result)
+                  .width(150)
+                  .height(200);
+              };
+              reader.readAsDataURL(input.files[0]);
+            }      
+
+        }
+
+
         function startWebsocket() {
 
             let socket = new WebSocket("ws://127.0.0.1:8080/API/ws");
@@ -54,25 +108,35 @@
                     } 
 
                     if (text["Disconected"] != null){
-                        console.log("se desconecto este webon")
+                        console.log("se desconecto este webon: " + text["Disconected"]); 
                         map.delete(text["Disconected"])
                     }
 
                     if (ans != true && text["Disconected"] == null && text["msg"] == null) {
-                        console.log("se conecto este webon")
+                        console.log("se conecto este webon: " + text["username"])
                         map.set(text["username"], text["publicKey"]);
                     }
 
                     if (text["msg"] != null){
+
+                        console.log("se recibio un mensaje");
+
                         var txt = text["msg"].split(",");
 
                         var txtfinal = decryptFunction(txt)
 
-                        console.log(text["userSender"] +": "+txtfinal)
-                    }
+                        console.log(txtfinal);
 
-                    console.log(map)
-                    console.log(text)
+                        if (txtfinal.search("data:image/jpeg;base64") != -1) {
+
+                            document.getElementById('main').src = txtfinal;
+
+                        } else {
+                            var txtfinal = decryptFunction(txt)
+
+                            console.log(text["userSender"] +": "+txtfinal)
+                        }
+                    }
 
                 });
 
@@ -91,16 +155,6 @@
         }
 
         var socket = startWebsocket();
-
-        function Myfunc(){
-
-            socket.send(JSON.stringify({
-                userSender: "angel",
-                msg: "pana",
-                userDestination: "diosito"
-            }));
-
-        }
 
         function decryptFunction(msg) {
 
@@ -165,13 +219,38 @@
 
             encrypter.setPublicKey(map.get(placeholderName));
 
-            //var encrypted = encrypter.encrypt(text);
-
             let encrypted = encryptFunction(map.get(placeholderName), text);
 
             var myJson = JSON.stringify(encrypted);
 
             socket.send(JSON.stringify({
+                userSender: "{{username}}",
+                msg: myJson,
+                userDestination: placeholderName
+            }));
+        }
+
+        function sendimage() {
+
+            var text = document.getElementById("id_placeholder").value;
+            var placeholderName = document.getElementById("id_placeholder1").value;
+            var youtubeimgsrc = document.getElementById("blah");
+
+
+
+            var encrypter = new JSEncrypt();
+
+            publicKeyOfUser = map.get(placeholderName)
+
+            encrypter.setPublicKey(map.get(placeholderName));
+
+            let encrypted = encryptFunction(map.get(placeholderName), youtubeimgsrc.src);
+
+            var myJson = JSON.stringify(encrypted);
+
+            console.log(myJson);
+
+           socket.send(JSON.stringify({
                 userSender: "{{username}}",
                 msg: myJson,
                 userDestination: placeholderName
@@ -245,7 +324,34 @@
                     </div>
                 </div>
 
-                    <input type='file' name='userFile'><br> 
+
+                <div>  
+                    <input id="holaaa" type='file' onchange="readURL(this);" />
+                </div>  
+
+
+                <div>
+                    <img id="blah" src="#" alt="your image" />
+                </div>
+
+
+                <div>
+                    <img id="main" src="#" alt="your image2" />
+                </div>
+
+
+
+                <div>
+                    <textarea id="log"></textarea>
+                </div>
+
+
+
+                <div>
+                    <input id="holaaa" type='button' onclick="sendimage();"  />
+                </div>
+
+
 
             </div>
         </div>
